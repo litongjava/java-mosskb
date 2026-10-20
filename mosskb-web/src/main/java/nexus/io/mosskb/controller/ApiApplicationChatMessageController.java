@@ -4,6 +4,7 @@ import nexus.io.annotation.Post;
 import nexus.io.annotation.RequestPath;
 import nexus.io.jfinal.aop.Aop;
 import nexus.io.mosskb.service.kb.MossKbApplicationChatMessageService;
+import nexus.io.mosskb.service.kb.SseChatEventSink;
 import nexus.io.mosskb.vo.MossKbChatRequestVo;
 import nexus.io.model.result.ResultVo;
 import nexus.io.tio.boot.http.TioRequestContext;
@@ -34,7 +35,7 @@ public class ApiApplicationChatMessageController {
     Tio.bSend(channelContext, httpResponse);
     httpResponse.setSend(false);
     try {
-      ResultVo result = Aop.get(MossKbApplicationChatMessageService.class).ask(channelContext, chatId, mossKbChatRequestVo);
+      ResultVo result = Aop.get(MossKbApplicationChatMessageService.class).ask(new SseChatEventSink(channelContext), chatId, mossKbChatRequestVo);
       if (result.getCode() != 200) {
         nexus.io.tio.http.server.util.SseEmitter.pushSSEChunk(channelContext, "error", JsonUtils.toJson(result));
         nexus.io.tio.http.server.util.SseEmitter.closeChunkConnection(channelContext);

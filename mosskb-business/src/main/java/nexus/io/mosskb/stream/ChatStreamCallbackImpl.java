@@ -13,6 +13,8 @@ import nexus.io.kit.PgObjectUtils;
 import nexus.io.mosskb.constant.MossKbTableNames;
 import nexus.io.mosskb.constant.SSEConstant;
 import nexus.io.mosskb.service.ChatStreamCallCan;
+import nexus.io.mosskb.service.kb.ChatEventSink;
+import nexus.io.mosskb.service.kb.SseChatEventSink;
 import nexus.io.mosskb.utils.TokenCounter;
 import nexus.io.mosskb.vo.MossKbChatRecordDetail;
 import nexus.io.mosskb.vo.MossKbChatStep;
@@ -23,7 +25,6 @@ import nexus.io.openai.chat.Choice;
 import nexus.io.openai.chat.OpenAiChatResponse;
 import nexus.io.tio.core.ChannelContext;
 import nexus.io.tio.core.Tio;
-import nexus.io.tio.http.server.util.SseEmitter;
 import nexus.io.tio.utils.json.FastJson2Utils;
 import nexus.io.tio.utils.json.JsonUtils;
 import okhttp3.Call;
@@ -39,17 +40,25 @@ public class ChatStreamCallbackImpl implements Callback {
   private final long start;
   private final MossKbRetrieveResult searchStep;
   private final MossKbChatStep chatStep;
-  private final ChannelContext channelContext;
+  private final ChatEventSink sink;
 
+  /** SSE 分享页使用：回答增量实时推送到浏览器连接。 */
   public ChatStreamCallbackImpl(Long chatId, Long messageId, long start, MossKbRetrieveResult searchStep, MossKbChatStep chatStep,
       //
       ChannelContext channelContext) {
+    this(chatId, messageId, start, searchStep, chatStep, new SseChatEventSink(channelContext));
+  }
+
+  /** 一次性返回的场景（小程序、服务端调用）使用自定义通道。 */
+  public ChatStreamCallbackImpl(Long chatId, Long messageId, long start, MossKbRetrieveResult searchStep, MossKbChatStep chatStep,
+      //
+      ChatEventSink sink) {
     this.chatId = chatId;
     this.messageId = messageId;
     this.start = start;
     this.searchStep = searchStep;
     this.chatStep = chatStep;
-    this.channelContext = channelContext;
+    this.sink = sink;
 
   }
 
@@ -59,7 +68,7 @@ public class ChatStreamCallbackImpl implements Callback {
       sendError("推理服务返回 HTTP " + response.code());
       response.close();
       cleanup(chatId);
-      SseEmitter.closeChunkConnection(channelContext);
+      sink.finish();
       return;
     }
 
@@ -69,9 +78,9 @@ public class ChatStreamCallbackImpl implements Callback {
         log.error(message);
         sendError(message);
         cleanup(chatId);
+        sink.finish();
         return;
-      }
-      StringBuffer completionContent = processResponseBody(chatId, messageId, channelContext, responseBody);
+      }      StringBuffer completionContent = processResponseBody(chatId, messageId, sink, responseBody);
       long elpased = System.currentTimeMillis() - start;
       double runTime = ((double) elpased) / 1000;
       int answer_tokens = TokenCounter.countTokens(completionContent.toString());
@@ -90,14 +99,14 @@ public class ChatStreamCallbackImpl implements Callback {
       MossKbStreamChatVo end = new MossKbStreamChatVo();
       end.setContent("").setChat_id(chatId).setId(messageId).setChat_record_id(messageId.toString());
       end.setOperate(true).setIs_end(true).setNode_is_end(true);
-      SseEmitter.pushSSEChunk(channelContext, JsonUtils.toJson(end));
+      sink.chunk(JsonUtils.toJson(end));
 
     } catch (Exception e) {
       log.error("Streaming answer failed", e);
       sendError("回答生成失败，请稍后重试");
     } finally {
       cleanup(chatId);
-      SseEmitter.closeChunkConnection(channelContext);
+      sink.finish();
     }
 
   }
@@ -106,10 +115,10 @@ public class ChatStreamCallbackImpl implements Callback {
   public void onFailure(Call call, IOException e) {
     sendError("推理服务连接失败，请稍后重试");
     cleanup(chatId);
-    SseEmitter.closeChunkConnection(channelContext);
+    sink.finish();
   }
 
-  public StringBuffer processResponseBody(Long chatId, Long messageId, ChannelContext channelContext, ResponseBody responseBody) throws IOException {
+  public StringBuffer processResponseBody(Long chatId, Long messageId, ChatEventSink sink, ResponseBody responseBody) throws IOException {
     StringBuffer completionContent = new StringBuffer();
     StringBuffer fnCallName = new StringBuffer();
     StringBuffer fnCallArgs = new StringBuffer();
@@ -122,7 +131,7 @@ public class ChatStreamCallbackImpl implements Callback {
 
       // 因为原始数据是data:开头
       if (line.startsWith("data: ") && !line.equals("data: [DONE]")) {
-        processResponseChunk(chatId, messageId, channelContext, completionContent, line);
+        processResponseChunk(chatId, messageId, sink, completionContent, line);
       }
     }
 
@@ -137,13 +146,13 @@ public class ChatStreamCallbackImpl implements Callback {
       } else {
         long end = System.currentTimeMillis();
         log.info("finish llm in {} (ms):", (end - start));
-        SseEmitter.closeChunkConnection(channelContext);
+        sink.finish();
       }
     }
     return completionContent;
   }
 
-  private void processResponseChunk(Long chatId, Long messageId, ChannelContext channelContext, StringBuffer completionContent, String line) {
+  private void processResponseChunk(Long chatId, Long messageId, ChatEventSink sink, StringBuffer completionContent, String line) {
     String data = line.substring(6);
     if (data.endsWith("}")) {
       OpenAiChatResponse chatResponse = FastJson2Utils.parse(data, OpenAiChatResponse.class);
@@ -159,14 +168,14 @@ public class ChatStreamCallbackImpl implements Callback {
           mossKbStreamChatVo.setOperate(true).setIs_end(false);
 
           String message = JsonUtils.toJson(mossKbStreamChatVo);
-          SseEmitter.pushSSEChunk(channelContext, message);
+          sink.chunk(message);
         }
       }
     }
   }
 
   private void sendError(String message) {
-    SseEmitter.pushSSEChunk(channelContext, "error", JsonUtils.toJson(com.jfinal.kit.Kv.by("code", 500).set("message", message)));
+    sink.event("error", JsonUtils.toJson(com.jfinal.kit.Kv.by("code", 500).set("message", message)));
   }
 
   private String functionCall(StringBuffer fnCallName, StringBuffer fnCallArgs) {

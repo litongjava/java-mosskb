@@ -36,7 +36,12 @@ public class MossKbAuthInterceptor implements HttpRequestInterceptor {
       Pattern.compile("/api/application/\\d+/chat/client/\\d+(/\\d+)?"),
       Pattern.compile("/api/application/\\d+/chat/\\d+/chat_record/\\d+/\\d+"),
       Pattern.compile("/api/application/\\d+/chat/\\d+/chat_record/\\d+(/vote)?"),
-      Pattern.compile("/api/application/\\d+/document/\\d+/preview")};
+      Pattern.compile("/api/application/\\d+/document/\\d+/preview"),
+      // 小程序访客令牌：智能提示资料、建会话与提问，应用范围在服务层核对。
+      // 管理端小程序码接口不在其中，仍然只对已登录的后台账号开放。
+      Pattern.compile("/api/miniapp/application/\\d+"),
+      Pattern.compile("/api/miniapp/chat/open/\\d+"),
+      Pattern.compile("/api/miniapp/chat/\\d+/message")};
 
   /** 函数图标：文件名是随机串，列表页和第三方嵌入页都要直接引用，取图不要求登录。 */
   private static final Pattern FUNCTION_ICON_PATH = Pattern

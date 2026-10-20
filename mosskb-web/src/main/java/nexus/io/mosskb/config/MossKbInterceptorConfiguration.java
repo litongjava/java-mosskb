@@ -27,6 +27,9 @@ public class MossKbInterceptorConfiguration {
     // 浮窗脚本由第三方页面直接引入，没有本地登录令牌
     model.addAllowUrls("/api/application/embed");
 
+    // 小程序首次进入时还没有任何令牌，只能放行换取令牌这一步
+    model.addAllowUrls("/api/miniapp/auth/login");
+
     model.addAllowUrls("/api/v1/search", "/api/display/info", "/api/auth/types", "/api/qr_type");
     //
     HttpInteceptorConfigure configure = new HttpInteceptorConfigure();

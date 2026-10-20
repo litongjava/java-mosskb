@@ -17,7 +17,10 @@ public class MossKbHandlerConfiguration {
     router.add("/api/v1/search", searxngSearchHandler::search);
     ApiRagDatasetRetrievalTitleHandler apiRagDatasetHandler = new ApiRagDatasetRetrievalTitleHandler();
     router.add("/api/v1/rag/dataset/retrieval/title", apiRagDatasetHandler::index);
-    
+
+    // 微信小程序接口
+    new MiniAppHandlerConfiguration().config();
+
     new TioAdminHandlerConfiguration().config();
     new TioAdminControllerConfiguration().config();
   }

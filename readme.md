@@ -41,6 +41,7 @@
 - 读取当前会话最近问答及摘要；**只有 token 超过预算才压缩上下文**，超过对话轮数不会单独触发压缩。
 - 平台目录、基础模型目录和表单入库；支持 OpenAI 兼容厂商与中转平台，允许手动输入模型 ID。
 - 隔离 Python 执行器从不以 Java 进程身份运行用户代码：默认走一次性 Docker 容器（引擎可在本机，也可在局域网内已装 Docker 的主机），Linux 上也可用 `kb.python.runner=host` 切到沙箱用户后在独立目录里执行；两种 runner 不可用时都明确拒绝执行，不使用宿主机 Python 回退。
+- 每个智能提示都可以生成独立的微信小程序码，用户扫码直接进入小程序对话；扫码等价于打开公开分享链接，公开访问的启停、每日次数限制与令牌重置同样生效，问答与网页分享页共用同一条检索推理流程。
 
 统计分析、Milvus 替代方案和完整官方工作流能力，不因前端有菜单或文档有设计示例就视为已全部实现。
 
@@ -70,9 +71,11 @@ project-mosskb/
     mosskb-business/       业务逻辑与测试
     mosskb-web/            HTTP 入口和本地配置
     scripts/             初始化、启动、目录同步与补丁导出
-    docs/                验证记录、定制说明和补丁
+    docs/                验证记录、定制说明、小程序接入文档与补丁
   java-mosskb-ui/
     src/                  前端源码（基于官方界面，保留必要定制）
+  mosskb-miniapp/
+    src/                  微信小程序源码（uni-app + wot-design-uni）
 ```
 
 需要 JDK 21、Maven、Node.js/npm、已启动的 PostgreSQL，以及安装在数据库服务端的 pgvector 和 pg_trgm。默认远程服务需要可用的 Gitee API Key。Docker 仅为隔离 Python 执行功能所需，且不必装在本机；Linux 上也可以用宿主的 `runuser` 沙箱替代 Docker。
@@ -277,6 +280,17 @@ python scripts/Sync-ModelCatalog.py --source gitee --token-file <管理员令牌
 | [41 存储文件到云存储](https://tio-boot.com/zh/knowledge-base/41) | 尚未实现，仅记录设计 |
 
 文档站提供 [llms.txt 与分章节语料](https://tio-boot.com/ai-retrieval.html)，可以直接交给 AI 工具检索。
+
+微信小程序接入的说明维护在仓库内：
+
+| 文档 | 内容 |
+| --- | --- |
+| [小程序接入总览](docs/miniapp/README.md) | 功能一览、接口总表与整体链路 |
+| [扫码登录与 scene 解析](docs/miniapp/01-miniapp-login.md) | 小程序码如何定位智能提示、访客令牌如何签发 |
+| [智能提示小程序码](docs/miniapp/02-miniapp-qrcode.md) | 管理端生成小程序码、参数约束与常见错误 |
+| [对话接口](docs/miniapp/03-miniapp-chat-api.md) | 一次性返回回答的实现，与流式分享页共用同一条流程 |
+| [本地开发与调试](docs/miniapp/04-miniapp-local-debug.md) | 本机地址、本地直登、自检清单与常见问题 |
+| [验证记录](docs/miniapp/05-verification.md) | 编译、联调测试与真实服务请求的结果 |
 
 ## 验证
 

@@ -31,7 +31,6 @@ import nexus.io.model.result.ResultVo;
 
 import nexus.io.chat.UniChatClient;
 import nexus.io.chat.UniChatRequest;
-import nexus.io.tio.core.ChannelContext;
 import nexus.io.tio.utils.environment.EnvUtils;
 import nexus.io.tio.utils.hutool.StrUtil;
 import nexus.io.tio.utils.json.JsonUtils;
@@ -43,7 +42,11 @@ import okhttp3.Callback;
 public class MossKbApplicationChatMessageService {
 
 
-  public ResultVo ask(ChannelContext channelContext, Long chatId, MossKbChatRequestVo vo) {
+  /**
+   * 提问入口。回答由模型异步生成，本方法在提交推理请求后即返回，
+   * 成败与正文通过 {@link ChatEventSink} 输出：浏览器分享页传入 SSE 通道，小程序等一次性返回的场景传入等待型通道。
+   */
+  public ResultVo ask(ChatEventSink sink, Long chatId, MossKbChatRequestVo vo) {
     String quesiton = vo.getMessage();
     if (StrUtil.isBlank(quesiton)) {
       return ResultVo.fail("The quesiton cannot be empty");
@@ -123,15 +126,14 @@ public class MossKbApplicationChatMessageService {
 
       Long[] datasetIdArray = dataset_id_list.toArray(new Long[0]);
 
-      nexus.io.tio.http.server.util.SseEmitter.pushSSEChunk(channelContext, "agent_status", JSONObject.of("phase", "context", "message", "正在读取会话上下文").toJSONString());
+      sink.event("agent_status", JSONObject.of("phase", "context", "message", "正在读取会话上下文").toJSONString());
       ConversationContextService.Context context = Aop.get(ConversationContextService.class).load(chatId, messageId, applicationVo.getDialogue_number(),
-          () -> nexus.io.tio.http.server.util.SseEmitter.pushSSEChunk(channelContext, "agent_status", JSONObject.of("phase", "compacting", "message", "上下文 token 超出预算，正在压缩").toJSONString()));
+          () -> sink.event("agent_status", JSONObject.of("phase", "compacting", "message", "上下文 token 超出预算，正在压缩").toJSONString()));
       MossKbRetrieveResult mossKbSearchStep = Aop.get(IterativeRetrievalService.class).retrieve(datasetIdArray, similarity, top_n,
           dataset_setting == null ? "embedding" : dataset_setting.getSearch_mode(), quesiton, context.messages(),
-          event -> nexus.io.tio.http.server.util.SseEmitter.pushSSEChunk(channelContext, "agent_status", event.toJSONString()));
+          event -> sink.event("agent_status", event.toJSONString()));
       mossKbSearchStep.setContext(context.metadata());
-      chatWichApplication(channelContext, quesiton, applicationVo, chatId, messageId, mossKbSearchStep, context.messages());
-      ApplicationAccess.countQuestion(caller, application_id);
+      chatWichApplication(sink, quesiton, applicationVo, chatId, messageId, mossKbSearchStep, context.messages());      ApplicationAccess.countQuestion(caller, application_id);
       started = true;
 
       return ResultVo.ok("");
@@ -142,7 +144,7 @@ public class MossKbApplicationChatMessageService {
     }
   }
 
-  private void chatWichApplication(ChannelContext channelContext, String quesiton, MossKbApplicationVo applicationVo, Long chatId,
+  private void chatWichApplication(ChatEventSink sink, String quesiton, MossKbApplicationVo applicationVo, Long chatId,
       long messageId, MossKbRetrieveResult mossKbSearchStep, List<JSONObject> history) {
     List<ParagraphSearchResultVo> records = mossKbSearchStep.getParagraph_list();
     log.info("records size:{}", records.size());
@@ -217,7 +219,7 @@ public class MossKbApplicationChatMessageService {
         .setMessage_list(messages).setMessage_tokens(message_tokens);
 
     long start = System.currentTimeMillis();
-    Callback callback = new ChatStreamCallbackImpl(chatId, messageId, start, mossKbSearchStep, mossKbChatStep, channelContext);
+    Callback callback = new ChatStreamCallbackImpl(chatId, messageId, start, mossKbSearchStep, mossKbChatStep, sink);
     request.setApiPrefixUrl(api_base).setApiKey(api_key);
     Call call = UniChatClient.streamOpenAi(request, callback);
     ChatStreamCallCan.put(chatId, call);
