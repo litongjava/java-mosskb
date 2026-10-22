@@ -1,13 +1,13 @@
 set -euo pipefail
 umask 077
 APP=/srv/apps/java-mosskb
-mkdir -p "$APP" /opt/java-mosskb-jdk21 /srv/workspaces/mosskb-backend
-if [ ! -x /opt/java-mosskb-jdk21/bin/java ]; then
- curl -fL -C - --retry 3 --connect-timeout 20 --max-time 600 https://aka.ms/download-jdk/microsoft-jdk-21-linux-x64.tar.gz -o /srv/workspaces/mosskb-backend/jdk21.tar.gz
- tar -xzf /srv/workspaces/mosskb-backend/jdk21.tar.gz -C /opt/java-mosskb-jdk21 --strip-components=1
+mkdir -p "$APP" /usr/java/jdk-21.0.6 /srv/workspaces/mosskb-backend
+if [ ! -x /usr/java/jdk-21.0.6/bin/java ]; then
+ curl -fL -C - --retry 3 --connect-timeout 20 --max-time 600 https://gitcode.com/ppnt/oracle-jdk/releases/download/21.0.6/jdk-21_linux-x64_bin.tar.gz -o /srv/workspaces/mosskb-backend/oracle-jdk-21.0.6.tar.gz
+ tar -xzf /srv/workspaces/mosskb-backend/oracle-jdk-21.0.6.tar.gz -C /usr/java/jdk-21.0.6 --strip-components=1
 fi
-/opt/java-mosskb-jdk21/bin/java -version
-export JAVA_HOME=/opt/java-mosskb-jdk21
+/usr/java/jdk-21.0.6/bin/java -version
+export JAVA_HOME=/usr/java/jdk-21.0.6
 export PATH="$JAVA_HOME/bin:$PATH"
 if ! command -v mvn >/dev/null; then
  apt-get update
@@ -42,7 +42,7 @@ Wants=network-online.target
 Type=simple
 User=root
 WorkingDirectory=/srv/apps/java-mosskb
-ExecStart=/opt/java-mosskb-jdk21/bin/java -Xms256m -Xmx2g -jar /srv/apps/java-mosskb/app.jar
+ExecStart=/usr/java/jdk-21.0.6/bin/java -Xms256m -Xmx2g -jar /srv/apps/java-mosskb/app.jar
 Restart=on-failure
 RestartSec=5
 UMask=0077

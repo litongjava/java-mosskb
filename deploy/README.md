@@ -9,7 +9,7 @@ deploy --server 97 project create --file deploy/project.json --json
 deploy --server 97 run java-mosskb --wait --json
 ```
 
-项目已存在时直接运行，不要重复创建。脚本自动安装独立 Java 21 和系统 Maven；初次执行需要可访问下载源和 Maven 仓库。使用宿主 Python 沙箱时服务以 root 运行，Python 任务通过 runuser 切换到专用用户。
+项目已存在时直接运行，不要重复创建。脚本自动安装Oracle JDK 21.0.6（安装于 `/usr/java/jdk-21.0.6`） 和系统 Maven；初次执行需要可访问下载源和 Maven 仓库。使用宿主 Python 沙箱时服务以 root 运行，Python 任务通过 runuser 切换到专用用户。
 
 - 服务：`java-mosskb.service`
 - 发布目录：`/srv/apps/java-mosskb`
