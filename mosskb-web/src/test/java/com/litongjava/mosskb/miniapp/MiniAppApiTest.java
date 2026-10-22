@@ -32,7 +32,7 @@ import nexus.io.tio.http.common.HttpRequest;
 import nexus.io.tio.http.common.HttpResponse;
 import nexus.io.tio.http.common.RequestLine;
 import nexus.io.tio.utils.environment.EnvUtils;
-import nexus.io.tio.utils.validator.ParameterValidationException;
+import nexus.io.model.exception.ParameterValidationException;
 
 /**
  * 小程序链路的联调测试：scene 解析、访客令牌、会话与参数校验都走真实数据库，

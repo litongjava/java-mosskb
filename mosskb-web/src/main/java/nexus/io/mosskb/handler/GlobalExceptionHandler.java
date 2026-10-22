@@ -5,7 +5,7 @@ import nexus.io.model.result.ResultVo;
 import nexus.io.tio.boot.exception.TioBootExceptionHandler;
 import nexus.io.tio.core.ChannelContext;
 import nexus.io.tio.http.common.HttpRequest;
-import nexus.io.tio.utils.validator.ParameterValidationException;
+import nexus.io.model.exception.ParameterValidationException;
 import nexus.io.tio.websocket.common.WebSocketRequest;
 
 @Slf4j
