@@ -21,11 +21,11 @@
       <artifactId>easyexcel</artifactId>
       <version>4.0.3</version>
     </dependency>
-    <!-- api-table 1.6.1：导出表头与内容左对齐 -->
+    <!-- api-table 1.6.2：导出表头与内容左对齐 -->
     <dependency>
       <groupId>nexus.io</groupId>
       <artifactId>api-table</artifactId>
-      <version>1.6.1</version>
+      <version>1.6.2</version>
     </dependency>
     <dependency>
       <groupId>org.apache.poi</groupId>
@@ -42,7 +42,7 @@
       <artifactId>tio-utils</artifactId>
       <version>${tio-boot.version}</version>
     </dependency>
-    <!-- t-io 2.1.7：Resps 新增 excel/pdf/docx/doc/ppt/image 等导出方法 -->
+    <!-- t-io 2.1.8：Resps 新增 excel/pdf/docx/doc/ppt/image 等导出方法 -->
     <dependency>
       <groupId>nexus.io</groupId>
       <artifactId>tio-boot</artifactId>

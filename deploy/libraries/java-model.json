@@ -1,0 +1,19 @@
+{
+  "key": "java-model",
+  "name": "java-model",
+  "kind": "lib",
+  "dependencies": [],
+  "workdir": "/srv/workspaces/project-nexus/java-model",
+  "shell": "bash",
+  "concurrency": "queue",
+  "hookEnabled": false,
+  "useGit": true,
+  "gitUrl": "git@gitee.com:ppnt/java-model.git",
+  "gitBranch": "main",
+  "commands": [
+    {
+      "name": "Install source to local Maven repository",
+      "script": "set -euo pipefail\nexport JAVA_HOME=/usr/java/jdk-21.0.6\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\nif [ -f build.txt ]; then cat build.txt; fi\ngit rev-parse HEAD\nmvn clean install -DskipTests -Dgpg.skip=true\n"
+    }
+  ]
+}

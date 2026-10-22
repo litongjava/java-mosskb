@@ -13,5 +13,8 @@
   "useGit": true,
   "gitUrl": "git@gitee.com:ppnt/java-mosskb.git",
   "gitBranch": "main",
-  "gitClean": false
+  "gitClean": false,
+  "dependencies": [
+    "tio-boot-admin"
+  ]
 }

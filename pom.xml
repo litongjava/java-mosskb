@@ -21,8 +21,8 @@
     <lombok-version>1.18.44</lombok-version>
     <langchain4j.version>0.34.0</langchain4j.version>
     <hotswap-classloader.version>1.2.9</hotswap-classloader.version>
-    <tio-boot.version>2.1.7</tio-boot.version>
-    <tio-boot-admin.version>2.1.6</tio-boot-admin.version>
+    <tio-boot.version>2.1.8</tio-boot.version>
+    <tio-boot-admin.version>2.1.8</tio-boot-admin.version>
     <jfinal-aop.version>1.4.0</jfinal-aop.version>
 
   </properties>
@@ -34,11 +34,18 @@
     <module>mosskb-web</module>
   </modules>
 
-  <!-- t-io 各模块统一到 ${tio-boot.version}:
-       tio-boot-admin-web 仍按 ${tio-boot-admin.version} 传递旧版 tio-core/tio-websocket-client,
-       不在这里压平会出现 http 层 2.1.7 配 core 2.1.6 的混搭。 -->
+  <!-- Keep all framework modules on the same source-built version. -->
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>nexus.io</groupId><artifactId>java-model</artifactId><version>1.2.8</version>
+      </dependency>
+      <dependency>
+        <groupId>nexus.io</groupId><artifactId>java-db</artifactId><version>1.6.2</version>
+      </dependency>
+      <dependency>
+        <groupId>nexus.io</groupId><artifactId>jfinal-aop</artifactId><version>${jfinal-aop.version}</version>
+      </dependency>
       <dependency>
         <groupId>nexus.io</groupId>
         <artifactId>tio-boot</artifactId>
