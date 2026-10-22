@@ -639,7 +639,7 @@ VALUES (
 
 -- 默认模型：默认推理模型与默认远程向量模型，向量维度 1024。
 INSERT INTO moss_kb_model(id,name,model_type,model_name,provider,credential,user_id,status,permission_type,meta)
-VALUES (1001,'Gitee DeepSeek V4.1 Flash','LLM','deepseek-v4.1-flash','model_openai_provider','{}',1,'SUCCESS','PUBLIC','{}'),
+VALUES (1001,'Gitee DeepSeek V4.1 Flash','LLM','DeepSeek-V4.1-Flash-1017','model_openai_provider','{}',1,'SUCCESS','PUBLIC','{}'),
 (1002,'Gitee Qwen3 Embedding 8B','EMBEDDING','Qwen3-Embedding-8B','model_openai_provider','{}',1,'SUCCESS','PUBLIC','{}')
 ON CONFLICT (id) DO NOTHING;
 
@@ -673,6 +673,10 @@ UPDATE moss_kb_model_provider SET icon='<svg xmlns="http://www.w3.org/2000/svg" 
 UPDATE moss_kb_model_provider SET icon='<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#0ea5e9"/><path d="M9 23V9l14 14V9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>' WHERE provider='model_newapi_provider';
 
 UPDATE moss_kb_model SET provider='model_gitee_provider' WHERE id IN (1001,1002) AND provider='model_openai_provider' AND credential::jsonb='{}'::jsonb;
+
+-- 更新已有默认模型的旧 ID，保留用户选择的其他模型。
+UPDATE moss_kb_model SET model_name='DeepSeek-V4.1-Flash-1017'
+WHERE id=1001 AND model_name='deepseek-v4.1-flash';
 
 -- 清理平台已失效的模型：这类历史脏数据（例如测试直接写库留下的 provider='provider'）
 -- 无法用于创建知识库，却会在选择列表里挂到空分组并和其它模型重名。
