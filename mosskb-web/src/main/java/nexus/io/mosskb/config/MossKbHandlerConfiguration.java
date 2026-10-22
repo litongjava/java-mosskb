@@ -1,5 +1,7 @@
 package nexus.io.mosskb.config;
 
+import nexus.io.mosskb.handler.TeamEmailReadHandler;
+import nexus.io.mosskb.handler.TeamEmailSaveHandler;
 import nexus.io.mosskb.handler.ApiRagDatasetRetrievalTitleHandler;
 import nexus.io.mosskb.httphandler.SearxngSearchHandler;
 import nexus.io.tio.boot.admin.config.TioAdminControllerConfiguration;
@@ -13,6 +15,8 @@ public class MossKbHandlerConfiguration {
     if (router == null) {
       return;
     }
+    router.get("/api/email_setting", new TeamEmailReadHandler()::handle);
+    router.post("/api/email_setting/save", new TeamEmailSaveHandler()::handle);
     SearxngSearchHandler searxngSearchHandler = new SearxngSearchHandler();
     router.add("/api/v1/search", searxngSearchHandler::search);
     ApiRagDatasetRetrievalTitleHandler apiRagDatasetHandler = new ApiRagDatasetRetrievalTitleHandler();

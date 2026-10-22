@@ -31,11 +31,8 @@ public class MossKbDatasetService {
   public ResultVo page(Long userId, Integer pageNo, Integer pageSize, String name) {
     TableInput tableInput = new TableInput();
     tableInput.setPageNo(pageNo).setPageSize(pageSize);
-    if (userId.equals(1L)) {
+    tableInput.set("user_id", userId);
 
-    } else {
-      tableInput.set("user_id", userId);
-    }
 
     if (name != null) {
       tableInput.set("name", name).set("name_op", Operators.CT);
@@ -105,11 +102,8 @@ public class MossKbDatasetService {
   public ResultVo get(Long userId, Long id) {
     ResultVo resultVo = new ResultVo();
     TableInput tableInput = new TableInput();
-    if (userId != null && userId.equals(1L)) {
-      tableInput.set("id", id);
-    } else {
-      tableInput.set("id", id).set("user_id", userId);
-    }
+    tableInput.set("id", id).set("user_id", userId);
+
     TableResult<Row> result = ApiTable.get(MossKbTableNames.moss_kb_dataset, tableInput);
     Row row = result.getData();
     if (row == null) {
@@ -135,11 +129,8 @@ public class MossKbDatasetService {
 
   public ResultVo list(Long userId) {
     Row queryRecord = new Row();
-    if (userId.equals(1L)) {
+    queryRecord.set("user_id", userId);
 
-    } else {
-      queryRecord.set("user_id", userId);
-    }
 
     String columns = "id,name,\"desc\",type,meta,user_id,embedding_mode_id,create_time,update_time";
     List<Row> records = Db.find(MossKbDataset.tableName, columns, queryRecord);
@@ -155,11 +146,8 @@ public class MossKbDatasetService {
       return ResultVo.fail("知识库不存在或无权访问");
     }
     TableInput tableInput = null;
-    if (userId != null && userId.equals(1L)) {
-      tableInput = TableInput.by("id", id);
-    } else {
-      tableInput = TableInput.by("id", id).set("user_id", userId);
-    }
+    tableInput = TableInput.by("id", id).set("user_id", userId);
+
 
     TableResult<Boolean> result = ApiTable.delete(MossKbTableNames.moss_kb_dataset, tableInput);
     Row deleteRecord = Row.by("dataset_id", id);

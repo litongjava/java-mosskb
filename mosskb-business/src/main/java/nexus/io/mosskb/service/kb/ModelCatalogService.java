@@ -106,7 +106,7 @@ public class ModelCatalogService {
   }
 
   public static boolean admin(Long userId) {
-    return userId != null && Db.queryLong("select count(*) from moss_kb_user where id=? and role='ADMIN' and is_active=true and deleted=0", userId) > 0;
+    return userId != null && Db.queryLong("select count(*) from moss_kb_user where id=? and role='SUPER_ADMIN' and is_active=true and deleted=0", userId) > 0;
   }
 
   public ResultVo discover(Long userId, JSONObject input) {

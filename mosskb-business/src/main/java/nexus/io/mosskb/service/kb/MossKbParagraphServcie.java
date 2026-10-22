@@ -161,9 +161,8 @@ public class MossKbParagraphServcie {
     }
     TableInput tableInput = new TableInput();
     tableInput.set("id", datasetId);
-    if (!userId.equals(1L)) {
-      tableInput.set("user_id", userId);
-    }
+    tableInput.set("user_id", userId);
+
 
     TableResult<Row> result = ApiTable.get(MossKbTableNames.moss_kb_dataset, tableInput);
 

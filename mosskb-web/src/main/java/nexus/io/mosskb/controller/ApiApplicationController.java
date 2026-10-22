@@ -74,9 +74,7 @@ public class ApiApplicationController {
     TableInput tableInput = new TableInput();
     tableInput.setPageNo(pageNo).setPageSize(pageSize);
     Long owner = TioRequestContext.getUserIdLong();
-    if (!Long.valueOf(1L).equals(owner)) {
-      tableInput.set("user_id", owner);
-    }
+    tableInput.set("user_id", owner);
     //tableInput.setSearchKey(name);
     tableInput.set("name", name);
     tableInput.set("name_op", Operators.CT);
@@ -207,7 +205,7 @@ public class ApiApplicationController {
   @Get("/profile")
   public ResultVo profile(HttpRequest httpRequest) {
     String referer = httpRequest.getReferer();
-    
+
     Long clientId = TioRequestContext.getUserIdLong();
     return Aop.get(MossKbApplicationService.class).profile(clientId);
   }

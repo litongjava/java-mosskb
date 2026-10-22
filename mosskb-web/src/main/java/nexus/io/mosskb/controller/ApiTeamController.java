@@ -3,7 +3,7 @@ package nexus.io.mosskb.controller;
 import nexus.io.annotation.RequestPath;
 import nexus.io.model.result.ResultVo;
 
-@RequestPath("/api/team")
+
 public class ApiTeamController {
 
   @RequestPath("/member")

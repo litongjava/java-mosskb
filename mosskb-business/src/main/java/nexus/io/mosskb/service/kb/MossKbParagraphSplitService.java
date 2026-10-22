@@ -16,7 +16,7 @@ import nexus.io.tio.utils.snowflake.SnowflakeIdUtils;
 public class MossKbParagraphSplitService {
   public ResultVo batch(Long userId, Long datasetId, List<ParagraphBatchVo> documents) {
     Row dataset = Db.findById("moss_kb_dataset", datasetId);
-    if (userId == null || dataset == null || (userId != 1L && !userId.equals(dataset.getLong("user_id")))) {
+    if (userId == null || dataset == null || (!userId.equals(dataset.getLong("user_id")))) {
       return ResultVo.fail("知识库不存在或无权访问");
     }
     if (documents == null || documents.isEmpty()) {

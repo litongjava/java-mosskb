@@ -115,11 +115,8 @@ public class MossKbApplicationService {
 
   public ResultVo list(Long userId) {
     Row quereyRecord = new Row();
-    if (userId.equals(1L)) {
+    quereyRecord.set("user_id", userId);
 
-    } else {
-      quereyRecord.set("user_id", userId);
-    }
 
     List<Row> records = Db.find(MossKbTableNames.moss_kb_application, quereyRecord);
     List<Kv> kvs = new ArrayList<>();
@@ -137,11 +134,8 @@ public class MossKbApplicationService {
 
     log.info("user_id:{}", userId);
     Row quereyRecord = null;
-    if (userId.equals(1L)) {
-      quereyRecord = Row.by("id", applicationId);
-    } else {
-      quereyRecord = Row.by("id", applicationId).set("user_id", userId);
-    }
+    quereyRecord = Row.by("id", applicationId).set("user_id", userId);
+
 
     Row record = Db.findFirst(MossKbApplication.tableName, quereyRecord);
     if (record == null) {
@@ -175,7 +169,7 @@ public class MossKbApplicationService {
   public ResultVo listApplicaionModel(Long userId, Long applicationId) {
     Row queryRecord = Row.by("user_id", userId).set("model_type", "LLM");
     String columns = "id,name,provider,model_type,model_name,status,meta,permission_type,user_id";
-    List<Row> list = Db.find("select " + columns + " from moss_kb_model where model_type='LLM' and (user_id=? or permission_type='PUBLIC')", userId);
+    List<Row> list = Db.find("select " + columns + " from moss_kb_model where model_type='LLM' and user_id=?", userId);
     List<Kv> kvs = new ArrayList<>();
     MossKbUserService mossKbUserService = Aop.get(MossKbUserService.class);
 

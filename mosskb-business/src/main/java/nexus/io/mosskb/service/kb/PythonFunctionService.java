@@ -48,7 +48,7 @@ public class PythonFunctionService {
   private static final String VISIBLE_WHERE = """
       from moss_kb_function_lib
        where deleted = false
-         and (user_id = ? or permission_type = 'PUBLIC')
+         and user_id = ?
       """;
 
   public ResultVo list(Long user, Integer page, Integer size, String name, String functionType, String selectUserId) {

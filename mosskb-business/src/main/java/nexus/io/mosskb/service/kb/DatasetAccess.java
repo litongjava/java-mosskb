@@ -11,7 +11,7 @@ public final class DatasetAccess {
       return false;
     }
     Row dataset = Db.findById("moss_kb_dataset", datasetId);
-    return dataset != null && (user == 1L || user.equals(dataset.getLong("user_id")));
+    return dataset != null && (user.equals(dataset.getLong("user_id")));
   }
 
   public static boolean ownsDocument(Long user, Long dataset, Long document) {

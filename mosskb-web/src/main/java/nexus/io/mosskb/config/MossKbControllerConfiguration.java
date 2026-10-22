@@ -48,7 +48,7 @@ public class MossKbControllerConfiguration {
     scannedClasses.add(ApiDatasetController.class);
     scannedClasses.add(ApiDatasetDocumentController.class);
     scannedClasses.add(ApiDisplayController.class);
-    scannedClasses.add(ApiEmailSettingController.class);
+
     scannedClasses.add(ApiFunctionLibController.class);
     scannedClasses.add(ApiModelController.class);
     scannedClasses.add(ApiPlatformController.class);
@@ -56,7 +56,7 @@ public class MossKbControllerConfiguration {
     scannedClasses.add(ApiProviderController.class);
     scannedClasses.add(ApiQrTypeController.class);
     scannedClasses.add(ApiTableMossKbParagraphController.class);
-    scannedClasses.add(ApiTeamController.class);
+
     scannedClasses.add(ApiUserController.class);
     scannedClasses.add(ApiUserManage.class);
     scannedClasses.add(ApiValidController.class);

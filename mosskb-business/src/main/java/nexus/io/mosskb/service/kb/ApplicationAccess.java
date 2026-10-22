@@ -49,7 +49,7 @@ public final class ApplicationAccess {
       return false;
     }
     Row app = Db.findById("moss_kb_application", applicationId);
-    return app != null && (userId == 1L || userId.equals(app.getLong("user_id")));
+    return app != null && (userId.equals(app.getLong("user_id")));
   }
 
   public static boolean canChat(Long clientId, Long applicationId) {

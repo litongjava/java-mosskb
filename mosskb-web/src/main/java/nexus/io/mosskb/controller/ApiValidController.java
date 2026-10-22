@@ -22,7 +22,7 @@ public class ApiValidController {
   public ResultVo users(Integer size) {
     Long userId = TioRequestContext.getUserIdLong();
     String role = Db.queryStr(ACTIVE_ROLE, userId);
-    if ("ADMIN".equalsIgnoreCase(role)) {
+    if ("ADMIN".equalsIgnoreCase(role) || "SUPER_ADMIN".equalsIgnoreCase(role)) {
       return ResultVo.ok(true);
     }
     return ResultVo.fail("仅管理员可以创建用户");

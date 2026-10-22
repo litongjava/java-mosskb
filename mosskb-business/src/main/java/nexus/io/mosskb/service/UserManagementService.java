@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.alibaba.fastjson2.JSONObject;
 
+import nexus.io.tio.boot.http.TioRequestContext;
 import nexus.io.db.activerecord.Db;
 import nexus.io.db.activerecord.Row;
 import nexus.io.model.result.ResultVo;
@@ -53,7 +54,7 @@ public class UserManagementService {
           token_version = token_version + 1,
           update_time = now()
       where id <> 1
-        and upper(role) <> 'ADMIN'
+        and upper(role) <> 'SUPER_ADMIN'
         and id = ?
         and deleted = 0
       """;
@@ -63,6 +64,13 @@ public class UserManagementService {
       """.formatted(CREATE_LOCK_KEY);
 
   public ResultVo create(JSONObject input) {
+    Row actor = TeamAccess.account(TioRequestContext.getUserIdLong());
+    if (!TeamAccess.administrator(actor) || input == null) {
+      return ResultVo.fail("无权创建用户");
+    }
+    String role = TeamAccess.superAdmin(actor) ? "ADMIN" : "USER";
+    Long id = SnowflakeIdUtils.id();
+    Long team = TeamAccess.superAdmin(actor) ? id : TeamAccess.teamId(actor);
     String username = input.getString("username");
     String password = input.getString("password");
     if (username == null || !username.matches(USERNAME_PATTERN) || password == null || password.length() < 6
@@ -72,8 +80,8 @@ public class UserManagementService {
     if (Db.queryLong(COUNT_BY_USERNAME, username) > 0) {
       return ResultVo.fail("用户名已存在");
     }
-    Row user = Row.by("id", SnowflakeIdUtils.id()).set("username", username).set("password", UserPassword.hash(password))
-        .set("role", "USER").set("is_active", true).set("source", "LOCAL").set("deleted", 0);
+    Row user = Row.by("id", id).set("username", username).set("password", UserPassword.hash(password))
+        .set("role", role).set("tenant_id", team).set("is_active", true).set("source", "LOCAL").set("deleted", 0);
     for (String field : new String[] {"email", "phone", "nick_name"}) {
       String value = input.getString(field);
       if (value != null && value.length() > 254) {
@@ -95,10 +103,13 @@ public class UserManagementService {
     if (duplicate[0]) {
       return ResultVo.fail("用户名已存在");
     }
-    return ResultVo.ok(JSONObject.of("id", user.getLong("id").toString(), "username", username, "role", "USER", "is_active", true));
+    return ResultVo.ok(JSONObject.of("id", user.getLong("id").toString(), "username", username, "role", role, "tenant_id", team.toString(), "is_active", true));
   }
 
   public ResultVo update(Long id, JSONObject input) {
+    if (!TeamAccess.canManage(id)) {
+      return ResultVo.fail("无权管理该用户");
+    }
     Row existing = Db.findFirst(ACCOUNT_BY_ID, id);
     if (existing == null) {
       return ResultVo.fail("用户不存在");
@@ -115,7 +126,7 @@ public class UserManagementService {
     }
     boolean activeChanged = input.containsKey("is_active");
     if (activeChanged) {
-      if (id == 1L || "ADMIN".equalsIgnoreCase(existing.getStr("role"))) {
+      if (id == 1L || "SUPER_ADMIN".equalsIgnoreCase(existing.getStr("role"))) {
         return ResultVo.fail("不能禁用管理员");
       }
       update.set("is_active", input.getBooleanValue("is_active"));
@@ -129,6 +140,9 @@ public class UserManagementService {
   }
 
   public ResultVo resetPassword(Long id, JSONObject input) {
+    if (!TeamAccess.canManage(id)) {
+      return ResultVo.fail("无权管理该用户");
+    }
     String password = input.getString("password");
     if (password == null || password.length() < 6 || password.length() > 20 || !password.equals(input.getString("re_password"))) {
       return ResultVo.fail("密码需为 6～20 位，且两次输入一致");
@@ -138,6 +152,9 @@ public class UserManagementService {
   }
 
   public ResultVo delete(Long id) {
+    if (!TeamAccess.canManage(id)) {
+      return ResultVo.fail("无权管理该用户");
+    }
     int updated = Db.update(LOGICAL_DELETE, id);
     return updated == 1 ? ResultVo.ok() : ResultVo.fail("用户不存在或不能删除管理员");
   }

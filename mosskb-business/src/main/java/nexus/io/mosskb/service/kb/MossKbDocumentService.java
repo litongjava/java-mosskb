@@ -64,9 +64,8 @@ public class MossKbDocumentService {
 
   public ResultVo page(Long userId, Long datasetId, Integer pageNo, Integer pageSize) {
     TableInput tableInput = new TableInput();
-    if (userId != 1) {
-      tableInput.set("user_id", userId);
-    }
+    tableInput.set("user_id", userId);
+
     tableInput.set("dataset_id", datasetId).setPageNo(pageNo).setPageSize(pageSize);
     TableResult<Page<Row>> tableResult = ApiTable.page(MossKbTableNames.moss_kb_document, tableInput);
     Page<Row> page = tableResult.getData();
@@ -83,9 +82,8 @@ public class MossKbDocumentService {
 
   public ResultVo list(Long userId, Long datasetId) {
     TableInput tableInput = new TableInput();
-    if (userId != 1) {
-      tableInput.set("user_id", userId);
-    }
+    tableInput.set("user_id", userId);
+
     tableInput.set("dataset_id", datasetId);
     TableResult<List<Row>> tableResult = ApiTable.list(MossKbTableNames.moss_kb_document, tableInput);
     List<Row> records = tableResult.getData();
@@ -98,11 +96,8 @@ public class MossKbDocumentService {
 
   public ResultVo get(Long userId, Long datasetId, Long documentId) {
     TableInput tableInput = TableInput.by("id", documentId);
-    if (userId == 1) {
-      tableInput.set("dataset_id", datasetId);
-    } else {
-      tableInput.set("user_id", userId).set("dataset_id", datasetId);
-    }
+    tableInput.set("user_id", userId).set("dataset_id", datasetId);
+
 
     Row data = ApiTable.get(MossKbTableNames.moss_kb_document, tableInput).getData();
     if (data == null) {

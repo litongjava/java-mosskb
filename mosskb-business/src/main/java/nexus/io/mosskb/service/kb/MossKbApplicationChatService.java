@@ -27,7 +27,7 @@ public class MossKbApplicationChatService {
     Long id = vo.getId();
     Long userId = nexus.io.tio.boot.http.TioRequestContext.getUserIdLong();
     Row app = Db.findById("moss_kb_application", id);
-    if (userId == null || app == null || (userId != 1L && !userId.equals(app.getLong("user_id")))) {
+    if (userId == null || app == null || (!userId.equals(app.getLong("user_id")))) {
       return ResultVo.fail("应用不存在或无权访问");
     }
     long chatId = SnowflakeIdUtils.id();

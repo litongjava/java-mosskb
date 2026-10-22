@@ -7,6 +7,7 @@ import nexus.io.db.activerecord.Db;
 import nexus.io.db.activerecord.Row;
 import nexus.io.jfinal.aop.Aop;
 import nexus.io.mosskb.service.ApiKeyAuth;
+import nexus.io.mosskb.service.TeamAccess;
 import nexus.io.mosskb.service.MossKbAuthService;
 import nexus.io.mosskb.service.kb.ApplicationAccess;
 import nexus.io.mosskb.service.kb.DatasetAccess;
@@ -63,7 +64,7 @@ public class MossKbAuthInterceptor implements HttpRequestInterceptor {
   private static final String[] NESTED_TYPES = {"document", "paragraph", "problem"};
 
   private static final String ACCOUNT_STATE = """
-      select role, is_active, deleted, token_version
+      select id, role, tenant_id, is_active, deleted, token_version
       from moss_kb_user
       where id = ?
       """;
@@ -152,17 +153,28 @@ public class MossKbAuthInterceptor implements HttpRequestInterceptor {
       }
     }
 
-    if (requiresAdministrator(path) && (!member || !"ADMIN".equalsIgnoreCase(account.getStr("role")))) {
+    if (requiresAdministrator(path) && (!member || !TeamAccess.administrator(account))) {
       return deny(HttpResponseStatus.C403);
     }
     if (!member && !isPublicPath(path)) {
       return deny(HttpResponseStatus.C403);
     }
-    if (member && userId != 1L && !ownsRequestedResource(userId, path)) {
+    if (member && !TeamAccess.teamId(account).equals(userId)) {
+      Row owner = TeamAccess.account(TeamAccess.teamId(account));
+      if (!TeamAccess.administrator(owner)) {
+        return deny(HttpResponseStatus.C403);
+      }
+    }
+    request.setAttribute("mosskb.actorId", userId);
+    Long resourceOwner = member ? TeamAccess.teamId(account) : userId;
+    if (member && !ownsRequestedResource(resourceOwner, path)) {
       return deny(HttpResponseStatus.C403);
     }
 
-    TioRequestContext.setUserId(userId);
+    boolean accountPath = path.equals("/api/user") || path.startsWith("/api/user/")
+        || path.startsWith("/api/user_manage") || path.startsWith("/api/valid/user")
+        || path.startsWith("/api/provider/catalog");
+    TioRequestContext.setUserId(accountPath ? userId : resourceOwner);
     return null;
   }
 
@@ -183,7 +195,19 @@ public class MossKbAuthInterceptor implements HttpRequestInterceptor {
     if (!withinKeyScope(principal, path) || !acceptsCaller(principal, request)) {
       return deny(HttpResponseStatus.C403);
     }
-    TioRequestContext.setUserId(principal.userId());
+    if (requiresAdministrator(path) && !TeamAccess.administrator(account)) {
+      return deny(HttpResponseStatus.C403);
+    }
+    request.setAttribute("mosskb.actorId", principal.userId());
+    Long team = TeamAccess.teamId(account);
+    if (!team.equals(principal.userId()) && !TeamAccess.administrator(TeamAccess.account(team))) {
+      return deny(HttpResponseStatus.C403);
+    }
+    if (!principal.applicationKey() && !ownsRequestedResource(team, path)) {
+      return deny(HttpResponseStatus.C403);
+    }
+    boolean accountPath = path.startsWith("/api/user") || path.startsWith("/api/provider/catalog");
+    TioRequestContext.setUserId(accountPath ? principal.userId() : team);
     return null;
   }
 

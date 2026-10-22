@@ -5,6 +5,7 @@ import java.util.List;
 import com.alibaba.fastjson2.JSONObject;
 import com.jfinal.kit.Kv;
 
+import nexus.io.tio.boot.http.TioRequestContext;
 import nexus.io.db.TableInput;
 import nexus.io.db.TableResult;
 import nexus.io.db.activerecord.Db;
@@ -32,7 +33,7 @@ public class KbUserService {
       """;
 
   private static final String PROFILE_BY_ID = """
-      select id, username, email, phone, nick_name, role, language
+      select id, username, email, phone, nick_name, role, language, tenant_id
       from moss_kb_user
       where id = ?
       """;
@@ -55,6 +56,7 @@ public class KbUserService {
   private static final String PAGE_CONDITION = """
       where deleted = 0
         and (username ilike ? or email ilike ?)
+        and (? = true or tenant_id = ?)
       """;
 
   private static final String COUNT_USERS = """
@@ -63,7 +65,7 @@ public class KbUserService {
       """ + PAGE_CONDITION;
 
   private static final String PAGE_USERS = """
-      select id, username, email, phone, is_active, role, nick_name, create_time, update_time, source
+      select id, tenant_id, username, email, phone, is_active, role, nick_name, create_time, update_time, source
       from moss_kb_user
       """ + PAGE_CONDITION + """
       order by create_time desc
@@ -166,8 +168,14 @@ public class KbUserService {
     int currentPage = Math.max(1, pageNo == null ? 1 : pageNo);
     int currentSize = Math.max(1, Math.min(100, pageSize == null ? 20 : pageSize));
     String term = "%" + (search == null ? "" : search) + "%";
-    long total = Db.queryLong(COUNT_USERS, term, term);
-    List<Row> rows = Db.find(PAGE_USERS, term, term, currentSize, (long) (currentPage - 1) * currentSize);
+    Row actor = TeamAccess.account(TioRequestContext.getUserIdLong());
+    if (!TeamAccess.administrator(actor)) {
+      return ResultVo.fail("无权查看用户");
+    }
+    boolean allTeams = TeamAccess.superAdmin(actor);
+    Long team = TeamAccess.teamId(actor);
+    long total = Db.queryLong(COUNT_USERS, term, term, allTeams, team);
+    List<Row> rows = Db.find(PAGE_USERS, term, term, allTeams, team, currentSize, (long) (currentPage - 1) * currentSize);
     return ResultVo.ok(new ResultPage<Kv>(currentPage, currentSize, (int) total, RowUtils.toKv(rows, false)));
   }
 }

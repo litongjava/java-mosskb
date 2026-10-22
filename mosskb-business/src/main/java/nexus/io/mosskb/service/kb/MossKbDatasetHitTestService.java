@@ -9,7 +9,7 @@ import nexus.io.model.result.ResultVo;
 public class MossKbDatasetHitTestService {
   public ResultVo hitTest(Long user, Long datasetId, String question, Double threshold, Integer limit, String mode) {
     Row dataset = Db.findById("moss_kb_dataset", datasetId);
-    if (user == null || dataset == null || (user != 1L && !user.equals(dataset.getLong("user_id")))) {
+    if (user == null || dataset == null || (!user.equals(dataset.getLong("user_id")))) {
       return ResultVo.fail("知识库不存在或无权访问");
     }
     return ResultVo.ok(RowUtils.toKv(Aop.get(MossKbParagraphRetrieveService.class).searchRows(
