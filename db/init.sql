@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS "public"."moss_kb_application_access_token" (
   "access_num" INT NOT NULL,
   "white_active" BOOLEAN NOT NULL,
   "white_list" VARCHAR[] NOT NULL,
-  "show_source" BOOLEAN NOT NULL,
+  "show_source" BOOLEAN NOT NULL DEFAULT TRUE,
   "language" VARCHAR(16),
   "remark" VARCHAR(256),
   "creator" VARCHAR(64) DEFAULT '',
@@ -1338,4 +1338,5 @@ CREATE TABLE IF NOT EXISTS moss_kb_team_setting (
 ALTER TABLE moss_kb_document_split_task ADD COLUMN IF NOT EXISTS import_dataset_id BIGINT;
 ALTER TABLE moss_kb_document_split_task ADD COLUMN IF NOT EXISTS import_status VARCHAR(16);
 ALTER TABLE moss_kb_document_split_task ADD COLUMN IF NOT EXISTS import_error TEXT;
+ALTER TABLE moss_kb_application_access_token ALTER COLUMN show_source SET DEFAULT TRUE;
 COMMIT;

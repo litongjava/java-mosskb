@@ -175,7 +175,7 @@ public class MossKbApplicationAccessTokenService {
         //
         .setWhiteList(new String[] {})
         //
-        .setShowSource(false);
+        .setShowSource(true);
     token.save();
   }
 
