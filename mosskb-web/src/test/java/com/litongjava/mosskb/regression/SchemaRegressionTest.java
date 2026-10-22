@@ -17,12 +17,12 @@ import nexus.io.mosskb.constant.MossKbTableNames;
 /**
  * 数据库结构回归测试。
  *
- * <p>保证代码里登记的表名和 db/schema.sql 建出来的表一一对应，改名之后不残留旧品牌前缀的表，
+ * <p>保证代码里登记的表名和 db/init.sql 建出来的表一一对应，改名之后不残留旧品牌前缀的表，
  * 并且部署依赖的两个扩展确实装好了。
  */
 public class SchemaRegressionTest {
 
-  /** db/schema.sql 建出的 public 表数量，与 db/README.md 记录的一致。 */
+  /** db/init.sql 建出的 public 表数量，与 db/README.md 记录的一致。 */
   private static final int EXPECTED_PUBLIC_TABLES = 31;
 
   /** 不带业务前缀的表，沿用上游命名约定。 */
@@ -78,7 +78,7 @@ public class SchemaRegressionTest {
   public void publicSchemaTableCountMatchesSchemaScript() {
     Integer count = Db.queryInt(
         "select count(*) from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'");
-    assertEquals("public 表数量与 db/schema.sql 不一致，改结构后要同步 db/README.md 与部署文档",
+    assertEquals("public 表数量与 db/init.sql 不一致，改结构后要同步 db/README.md 与部署文档",
         EXPECTED_PUBLIC_TABLES, count == null ? -1 : count.intValue());
   }
 

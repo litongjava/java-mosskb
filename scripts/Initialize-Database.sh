@@ -2,9 +2,9 @@
 #
 # 初始化或升级 Java MossKB 数据库（Linux / WSL）。
 #
-# 读取 mosskb-web/my.txt 里的连接参数，依次执行 db/schema.sql 与 db/seed.sql。
-# 两个脚本都是幂等的：空库会建好 30 张业务表并写入管理员、默认模型、平台目录和
-# 内置函数模板；已有库会补齐缺失的表、列和索引，不删除已有数据。
+# 读取 mosskb-web/my.txt 里的连接参数，执行 db/init.sql。
+# SQL 可重复执行：空库会建好 31 张业务表并写入管理员、默认模型、平台目录和
+# 内置函数模板；已有库会补齐缺失的表、列和索引，并执行内置的平台目录维护逻辑。
 #
 # 用法：
 #   ./scripts/Initialize-Database.sh                 # 初始化或升级
@@ -91,7 +91,7 @@ SCRIPTS=()
 if [[ "${DO_RESET}" -eq 1 ]]; then
   SCRIPTS+=("${PROJECT_ROOT}/db/reset.sql")
 fi
-SCRIPTS+=("${PROJECT_ROOT}/db/schema.sql" "${PROJECT_ROOT}/db/seed.sql")
+SCRIPTS+=("${PROJECT_ROOT}/db/init.sql")
 
 export PGPASSWORD="${DB_PASSWORD}"
 export PGCLIENTENCODING="UTF8"

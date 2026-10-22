@@ -1,8 +1,8 @@
 ﻿# 初始化或升级 Java MossKB 数据库。
 #
-# 读取 mosskb-web/my.txt 里的连接参数，依次执行 db/schema.sql 与 db/seed.sql。
-# 两个脚本都是幂等的：空库会建好 30 张业务表并写入管理员、默认模型、平台目录和
-# 内置函数模板；已有库会补齐缺失的表、列和索引，不删除已有数据。
+# 读取 mosskb-web/my.txt 里的连接参数，执行 db/init.sql。
+# SQL 可重复执行：空库会建好 31 张业务表并写入管理员、默认模型、平台目录和
+# 内置函数模板；已有库会补齐缺失的表、列和索引，并执行内置的平台目录维护逻辑。
 #
 # 参数：
 #   -PostgresBin  PostgreSQL 的 bin 目录。省略时使用 PATH 上的 psql。
@@ -60,8 +60,7 @@ $scripts = New-Object System.Collections.Generic.List[string]
 if ($Reset) {
   $scripts.Add((Join-Path $dbRoot 'reset.sql'))
 }
-$scripts.Add((Join-Path $dbRoot 'schema.sql'))
-$scripts.Add((Join-Path $dbRoot 'seed.sql'))
+$scripts.Add((Join-Path $dbRoot 'init.sql'))
 
 $previousPassword = $env:PGPASSWORD
 $previousEncoding = $env:PGCLIENTENCODING

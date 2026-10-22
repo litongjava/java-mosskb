@@ -122,7 +122,7 @@ Linux 使用同名 Shell 脚本：
 ./scripts/Initialize-Database.sh
 ```
 
-两个脚本都读取 `my.txt`，依次执行 `db/schema.sql` 与 `db/seed.sql`：前者建立扩展、31 张业务表、索引与外键并补齐旧库缺少的列，后者写入管理员账号、默认模型、平台接入信息、平台模型目录快照与内置函数模板。两者都是幂等的，可以在已有数据库上重复执行。需要清空重建时加 `-Reset`（或 `--reset`），它会先执行 `db/reset.sql` 删除业务表。升级已有数据库前先备份。
+两个脚本都读取 `my.txt`，执行统一的 `db/init.sql`，在一个事务内建立扩展、31 张业务表、索引与外键，补齐旧库缺少的列，并写入管理员、默认模型、平台目录与内置函数模板。可重复执行，保留原有的平台图标更新与失效模型清理逻辑。需要清空重建时加 `-Reset`（或 `--reset`），它会先执行 `db/reset.sql` 删除业务表。升级已有数据库前先备份。数据库创建、直接执行 SQL 和初始登录说明见 [db/README.md](db/README.md)。
 
 ### 隔离 Python 执行器
 
@@ -225,7 +225,7 @@ Java 运行工作目录为 `mosskb-web`，以便加载本地配置。实际可�
 
 管理员登录后，在“系统 → 用户 → 创建用户”新增账号。普通账号登录后拥有自己的应用、知识库和私有模型；停用或密码重置会使旧令牌失效。管理员仍有管理权限；需要数据库和进程也完全独立时，应分别部署实例。
 
-头像菜单的“语言”可以切换简体中文 / 繁体中文 / 英文，选择通过 `POST /api/user/language` 存进 `moss_kb_user.language`，再由 `GET /api/user` 下发给前端，下次登录仍然生效；`language` 为空（默认）表示跟随浏览器语言。老库升级时先执行 `db/schema.sql`，里面的 `ADD COLUMN IF NOT EXISTS` 会补上这一列，列缺失会让个人资料接口报错。
+头像菜单的“语言”可以切换简体中文 / 繁体中文 / 英文，选择通过 `POST /api/user/language` 存进 `moss_kb_user.language`，再由 `GET /api/user` 下发给前端，下次登录仍然生效；`language` 为空（默认）表示跟随浏览器语言。老库升级时先执行 `db/init.sql`，里面的 `ADD COLUMN IF NOT EXISTS` 会补上这一列，列缺失会让个人资料接口报错。
 
 基本流程：创建模型 → 创建知识库并选择向量模型 → 上传文档并检查解析预览 → 确认分段 → 创建应用并关联知识库和聊天模型 → 在 UI 调试及追问。前端提交分段时必须保留解析返回的文件 `id`。
 
@@ -307,7 +307,7 @@ mvn test
 | 测试类 | 覆盖内容 |
 | --- | --- |
 | `BrandingRegressionTest` | 全仓库源码、配置、脚本与文档里不再出现旧品牌字样，只放行要求的用户手册链接 |
-| `SchemaRegressionTest` | `MossKbTableNames` 登记的表在库里都存在、常量名与表名一致、没有旧品牌前缀的表、扩展已安装、表数量与 `db/schema.sql` 一致 |
+| `SchemaRegressionTest` | `MossKbTableNames` 登记的表在库里都存在、常量名与表名一致、没有旧品牌前缀的表、扩展已安装、表数量与 `db/init.sql` 一致 |
 | `SeedDataRegressionTest` | 管理员账号与文档记录的初始密码、默认推理与向量模型、平台接入、模型目录快照、内置函数模板 |
 | `ApiContractRegressionTest` | `/api/display/info` 下发的标题、项目地址、论坛地址与手册链接，以及 `app.name` |
 | `UserLanguageRegressionTest` | `POST /api/user/language` 能写库、`GET /api/user` 会带回 `language`、非法语言与未登录被拒绝且不改库 |
