@@ -13,7 +13,7 @@
   "commands": [
     {
       "name": "Install source to local Maven repository",
-      "script": "set -euo pipefail\nif [ ! -x /usr/java/temurin-8/bin/java ]; then\n mkdir -p /usr/java/temurin-8\n curl -fL --retry 3 --connect-timeout 20 --max-time 600 https://api.adoptium.net/v3/binary/latest/8/ga/linux/x64/jdk/hotspot/normal/eclipse -o /usr/java/temurin8.tar.gz\n tar -xzf /usr/java/temurin8.tar.gz -C /usr/java/temurin-8 --strip-components=1\nfi\nexport JAVA_HOME=/usr/java/temurin-8\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\nif [ -f build.txt ]; then cat build.txt; fi\ngit rev-parse HEAD\nmvn clean install -DskipTests -Dgpg.skip=true\n"
+      "script": "set -euo pipefail\nif [ ! -x /usr/java/jdk1.8.0_411/bin/java ]; then\n mkdir -p /usr/java/jdk1.8.0_411\n curl -fL --retry 3 --connect-timeout 20 --max-time 600 https://gitcode.com/ppnt/oracle-jdk/releases/download/8u411/jdk-8u411-linux-x64.tar.gz -o /usr/java/jdk-8u411-linux-x64.tar.gz\n tar -xzf /usr/java/jdk-8u411-linux-x64.tar.gz -C /usr/java/jdk1.8.0_411 --strip-components=1\nfi\nexport JAVA_HOME=/usr/java/jdk1.8.0_411\nexport PATH=\"$JAVA_HOME/bin:$PATH\"\nif [ -f build.txt ]; then cat build.txt; fi\ngit rev-parse HEAD\nmvn clean install -DskipTests -Dgpg.skip=true\n"
     }
   ]
 }
