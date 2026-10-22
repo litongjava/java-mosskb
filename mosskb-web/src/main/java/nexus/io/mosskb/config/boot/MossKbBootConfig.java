@@ -1,6 +1,8 @@
 package nexus.io.mosskb.config.boot;
 
 import nexus.io.context.BootConfiguration;
+import nexus.io.jfinal.aop.Aop;
+import nexus.io.mosskb.service.kb.BackgroundImportService;
 import nexus.io.mosskb.config.MossKbDbConfig;
 import nexus.io.mosskb.config.MossKbEhCacheConfig;
 import nexus.io.mosskb.config.MossKbEnjoyEngineConfig;
@@ -31,6 +33,7 @@ public class MossKbBootConfig implements BootConfiguration {
     new MossKbEhCacheConfig().config();
     new MossKbEnjoyEngineConfig().config();
     new MossKbFastJsonConfig().config();
+    Aop.get(BackgroundImportService.class).recover();
     new MossKbHandlerConfiguration().config();
     new MossKbInterceptorConfiguration().config();
     new MossKbPlaywrightConfig().config();

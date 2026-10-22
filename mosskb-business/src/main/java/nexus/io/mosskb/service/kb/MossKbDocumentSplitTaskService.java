@@ -7,6 +7,7 @@ import com.jfinal.kit.Kv;
 
 import lombok.extern.slf4j.Slf4j;
 import nexus.io.db.activerecord.Db;
+import nexus.io.jfinal.aop.Aop;
 import nexus.io.db.activerecord.Row;
 import nexus.io.mosskb.constant.MossKbTableNames;
 import nexus.io.mosskb.vo.MossKbDocumentSplitTaskVo;
@@ -103,6 +104,7 @@ public class MossKbDocumentSplitTaskService {
     String json = JsonUtils.toJson(results == null ? new ArrayList<>() : results);
     Db.update("update moss_kb_document_split_task set status=?, progress=100, result=?::jsonb, update_time=now() where id=?",
         STATUS_SUCCESS, json, taskId);
+    Aop.get(BackgroundImportService.class).dispatch(taskId);
   }
 
   /** 记录失败原因并把任务置为失败。 */
@@ -114,6 +116,10 @@ public class MossKbDocumentSplitTaskService {
     log.warn("document split task {} failed: {}", taskId, reason);
     Db.update("update moss_kb_document_split_task set status=?, error_message=?, update_time=now() where id=?",
         STATUS_FAILED, reason, taskId);
+    Db.update("""
+        update moss_kb_document_split_task set import_status = 'failed', import_error = ?
+        where id = ? and import_status = 'queued'
+        """, reason, taskId);
   }
 
   /** 查询任务当前状态，任务不存在或不属于该用户时返回 null。 */
