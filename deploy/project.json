@@ -1,0 +1,17 @@
+{
+  "key": "java-mosskb",
+  "name": "Java MossKB backend from Gitee",
+  "workdir": "/srv/workspaces/java-mosskb",
+  "shell": "bash",
+  "hookEnabled": false,
+  "commands": [
+    {
+      "name": "Build and deploy backend",
+      "scriptFile": "backend.sh"
+    }
+  ],
+  "useGit": true,
+  "gitUrl": "git@gitee.com:ppnt/java-mosskb.git",
+  "gitBranch": "main",
+  "gitClean": false
+}
