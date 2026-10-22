@@ -31,3 +31,5 @@ deploy --server 97 run java-mosskb --with-dependencies --wait --json
 ```
 
 部署依赖链最终汇总到 tio-boot-admin；服务器会按顺序构建全部上游库，失败时不继续部署应用。仅创建项目不会安装依赖，必须执行带 `--with-dependencies` 的运行命令。
+
+底层 Java 8 库使用独立 Temurin 8 构建（首次从 Adoptium 官方下载）；tio-boot-admin 和后端使用 `/usr/java/jdk-21.0.6`。两个 JDK 并存，不替换系统默认 Java。
