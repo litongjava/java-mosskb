@@ -16,6 +16,11 @@ fi
 cd /srv/workspaces/java-mosskb
 cat build.txt
 mvn clean package -DskipTests -Dgpg.skip=true -Pproduction
+BACKUP="$APP/backups/$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir -p "$BACKUP"
+if [ -f "$APP/app.jar" ]; then
+ cp -p "$APP/app.jar" "$BACKUP/app.jar"
+fi
 install -m 600 mosskb-web/target/mosskb-web-1.0.4.jar "$APP/app.jar"
 install -m 600 db/init.sql "$APP/init.sql"
 install -m 700 scripts/setup-python-host-sandbox.sh "$APP/sandbox.sh"
@@ -29,6 +34,10 @@ export PGPASSWORD=$(sed -n 's/^jdbc.pswd=//p' my.txt)
 if ! psql -h 127.0.0.1 -U postgres -d postgres -Atc "SELECT 1 FROM pg_database WHERE datname='mosskb'" | grep -q 1; then
  createdb -h 127.0.0.1 -U postgres -E UTF8 mosskb
 fi
+pg_dump -h 127.0.0.1 -U postgres -d mosskb -Fc -f "$BACKUP/mosskb.dump"
+pg_restore --list "$BACKUP/mosskb.dump" > "$BACKUP/contents.txt"
+echo "Backup saved: $BACKUP"
+git -C /srv/workspaces/java-mosskb rev-parse HEAD
 psql -X -h 127.0.0.1 -U postgres -d mosskb -v ON_ERROR_STOP=1 -f init.sql > database-init.log 2>&1
 psql -h 127.0.0.1 -U postgres -d mosskb -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'; SELECT model_name FROM moss_kb_model WHERE id=1001;"
 unset PGPASSWORD
