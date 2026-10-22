@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//{"username":"admin","password":"Kimi@2024"}
+//{"username":"admin","password":"123456"}
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

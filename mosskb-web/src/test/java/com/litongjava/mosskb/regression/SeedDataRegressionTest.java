@@ -22,7 +22,7 @@ public class SeedDataRegressionTest {
 
   /** 与 db/init.sql 和数据库设计章节记录一致。 */
   private static final String ADMIN_USERNAME = "admin";
-  private static final String ADMIN_DEFAULT_PASSWORD = "Kimi@2024";
+  private static final String ADMIN_DEFAULT_PASSWORD = "123456";
 
   /** db/init.sql 写入的两条默认模型。 */
   private static final String DEFAULT_LLM = "Gitee DeepSeek V4.1 Flash";
@@ -40,7 +40,7 @@ public class SeedDataRegressionTest {
   @Test
   public void adminAccountSeededWithDocumentedDefaultPassword() {
     assertEquals(ADMIN_USERNAME, Db.queryStr("select username from moss_kb_user where id = 1"));
-    assertEquals("ADMIN", Db.queryStr("select role from moss_kb_user where id = 1"));
+    assertEquals("SUPER_ADMIN", Db.queryStr("select role from moss_kb_user where id = 1"));
     assertEquals(Boolean.TRUE, Db.queryBoolean("select is_active from moss_kb_user where id = 1"));
 
     String stored = Db.queryStr("select password from moss_kb_user where id = 1");

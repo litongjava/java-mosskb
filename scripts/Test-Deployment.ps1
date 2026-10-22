@@ -20,7 +20,7 @@
 param(
   [string]$BaseUrl = 'http://127.0.0.1:10060',
   [string]$Username = 'admin',
-  [string]$Password = 'Kimi@2024',
+  [string]$Password = '123456',
   [int]$WaitSeconds = 60,
   [string]$PostgresBin = '',
   [string]$ConfigFile = (Join-Path $PSScriptRoot '../mosskb-web/my.txt'),
